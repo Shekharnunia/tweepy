@@ -11,6 +11,7 @@ from tweepy.binder import bind_api
 from tweepy.error import TweepError
 from tweepy.parsers import ModelParser, Parser
 from tweepy.utils import list_to_csv
+import json
 
 
 class API(object):
@@ -661,6 +662,17 @@ class API(object):
             allowed_param=['resources'],
             use_cache=False
         )
+    
+    def send_direct_message_new(self, messageobject):
+        """ :reference: https://developer.twitter.com/en/docs/direct-messages/sending-and-receiving/api-reference/new-event.html
+        """
+        headers, post_data = API._buildmessageobject(messageobject)
+        return bind_api(
+            api=self,
+            path = '/direct_messages/events/new.json',
+            method='POST',
+            require_auth=True
+        )(self, post_data=post_data, headers=headers)
 
     def update_profile_image(self, filename, file_=None):
         """ :reference: https://developer.twitter.com/en/docs/accounts-and-users/manage-account-settings/api-reference/post-account-update_profile_image
@@ -1385,4 +1397,15 @@ class API(object):
             'Content-Length': str(len(body))
         }
 
+        return headers, body
+    
+        """ Internal use only """
+    @staticmethod
+    def _buildmessageobject(messageobject):
+        body = json.dumps(messageobject)
+        # build headers
+        headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': str(len(body))
+        }
         return headers, body
